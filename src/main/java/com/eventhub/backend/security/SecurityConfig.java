@@ -70,7 +70,6 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
 
-            // Enable the CORS configuration defined above
             .cors(cors -> {})
 
             .sessionManagement(session ->
@@ -81,76 +80,82 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // Login and signup
+                // Public login and signup endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // Allow public student signup
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/users"
+                ).permitAll()
 
                 // User management: ADMIN only
                 .requestMatchers(
-                        HttpMethod.GET,
-                        "/api/users",
-                        "/api/users/**"
+                    HttpMethod.GET,
+                    "/api/users",
+                    "/api/users/**"
                 ).hasRole("ADMIN")
 
                 .requestMatchers(
-                        HttpMethod.PATCH,
-                        "/api/users/**"
+                    HttpMethod.PATCH,
+                    "/api/users/**"
                 ).hasRole("ADMIN")
 
                 // Public event and category viewing
                 .requestMatchers(
-                        HttpMethod.GET,
-                        "/api/events",
-                        "/api/events/**",
-                        "/api/categories",
-                        "/api/categories/**"
+                    HttpMethod.GET,
+                    "/api/events",
+                    "/api/events/**",
+                    "/api/categories",
+                    "/api/categories/**"
                 ).permitAll()
 
                 // Event creation: ADMIN or ORGANIZER
                 .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/events",
-                        "/api/events/"
+                    HttpMethod.POST,
+                    "/api/events",
+                    "/api/events/"
                 ).hasAnyRole("ADMIN", "ORGANIZER")
 
                 // Event status changes: ADMIN only
-                // This rule must appear before the general PUT rule
+                // Keep this before the general PUT rule
                 .requestMatchers(
-                        HttpMethod.PUT,
-                        "/api/events/*/status"
+                    HttpMethod.PUT,
+                    "/api/events/*/status"
                 ).hasRole("ADMIN")
 
                 // Event editing: ADMIN or ORGANIZER
                 .requestMatchers(
-                        HttpMethod.PUT,
-                        "/api/events/*"
+                    HttpMethod.PUT,
+                    "/api/events/*"
                 ).hasAnyRole("ADMIN", "ORGANIZER")
 
                 // Event deletion: ADMIN or ORGANIZER
                 .requestMatchers(
-                        HttpMethod.DELETE,
-                        "/api/events/*"
+                    HttpMethod.DELETE,
+                    "/api/events/*"
                 ).hasAnyRole("ADMIN", "ORGANIZER")
 
                 // Registration creation: STUDENT only
                 .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/registrations/*/*"
+                    HttpMethod.POST,
+                    "/api/registrations/*/*"
                 ).hasRole("STUDENT")
 
                 // Viewing registrations: authenticated roles
                 .requestMatchers(
-                        HttpMethod.GET,
-                        "/api/registrations/**"
+                    HttpMethod.GET,
+                    "/api/registrations/**"
                 ).hasAnyRole(
-                        "STUDENT",
-                        "ORGANIZER",
-                        "ADMIN"
+                    "STUDENT",
+                    "ORGANIZER",
+                    "ADMIN"
                 )
 
                 // Registration cancellation: STUDENT only
                 .requestMatchers(
-                        HttpMethod.DELETE,
-                        "/api/registrations/*"
+                    HttpMethod.DELETE,
+                    "/api/registrations/*"
                 ).hasRole("STUDENT")
 
                 // All other requests require authentication
@@ -158,8 +163,8 @@ public class SecurityConfig {
             )
 
             .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
             );
 
         return http.build();
